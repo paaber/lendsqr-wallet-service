@@ -70,9 +70,10 @@
       "@constants/*": ["src/constants/*"],
       "@routes/*": ["src/routes/*"],
       "@config/*": ["src/config/*"],
+      "@root/*": ["./*"] 
     },
     "useUnknownInCatchVariables": false
   },
-  "include": ["src/**/*", "spec/**/*.ts", "miniapps/**/*", "build.ts"],
+  "include": ["src/**/*", "spec/**/*.ts", "build.ts"],
   "exclude": ["src/public/"]
 }

@@ -2,25 +2,25 @@
  * Setup express server.
  */
 
+import express, { NextFunction, Request, Response } from 'express';
+import 'express-async-errors'; // For handling async errors
+import helmet from 'helmet';
+import logger from 'jet-logger';
 import morgan from 'morgan';
 import path from 'path';
-import helmet from 'helmet';
-import express, { Request, Response, NextFunction } from 'express';
-import logger from 'jet-logger';
-import 'express-async-errors'; // For handling async errors
 
-import BaseRouter from '@src/routes/api';
-import Paths from '@src/constants/Paths';
-import EnvVars from '@src/constants/EnvVars';
+import EnvVars from '@constants/EnvVars';
 import HttpStatusCodes from '@src/constants/HttpStatusCodes';
 import { NodeEnvs } from '@src/constants/misc';
+import Paths from '@src/constants/Paths';
 import { RouteError } from '@src/other/classes';
+import BaseRouter from '@src/routes/api';
 import { corsMiddleware } from './middlewares/cors';
 import limiter from './middlewares/rateLimiting';
 
-import swaggerUi from 'swagger-ui-express';
-import { readFileSync } from 'fs';
 import { ApiJsonData } from '@routes/types/express/misc';
+import { readFileSync } from 'fs';
+import swaggerUi from 'swagger-ui-express';
 
 // **** Variables **** //
 

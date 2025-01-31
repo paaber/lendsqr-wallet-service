@@ -5,11 +5,9 @@ import type { Knex } from 'knex';
 
 import EnvVars  from '@constants/EnvVars';
 
-import { config as dotenvConfig } from 'dotenv';
 
-if (process.env.NODE_ENV === 'development') {
-  dotenvConfig();
-}
+
+
 
 const config: { [key: string]: Knex.Config } = {
   development: {

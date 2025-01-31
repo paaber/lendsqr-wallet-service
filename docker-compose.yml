@@ -1,35 +1,37 @@
-version: "3.8"
+version: '3.8'
 
 services:
   mysql:
     container_name: lend_qr_mysql
-    image: mysql:latest
+    image: mysql
     restart: always
     volumes:
       - lend_qr_db_data:/var/lib/mysql
     ports:
-      - "6710:3306"
+      - '5710:3306'
     environment:
       MYSQL_DATABASE: lend_qr_db
       MYSQL_USER: lend_qr_db
       MYSQL_PASSWORD: u1wVreGixnrQsVFVq4GF
-      MYSQL_ROOT_PASSWORD: rootpassword # Change this to a secure password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    
 
   app:
     build: .
     container_name: lend_qr_app
     ports:
-      - "6711:3000"
-      - "9229:9229"
+      - '5711:3000'
+      - '9229:9229'
     environment:
       APP_NAME: lend_qr
       PORT: 3000
       NODE_ENV: development
       DEBUG: express:*
-      DATABASE_URL: mysql://lend_qr_db:u1wVreGixnrQsVFVq4GF@mysql:3306/lend_qr_db
+      DATABASE_URL: "mysql://lend_qr_db:u1wVreGixnrQsVFVq4GF@mysql:3306/lend_qr_db?connect_timeout=300&allowPublicKeyRetrieval=true&useSSL=false"
 
     command: >
-      bash -c "npx prisma migrate deploy && nodemon src/server.ts"
+      bash -c " sleep 2 && npx knex migrate:latest && npx knex seed:run && nodemon "
+
     depends_on:
       - mysql
     volumes:

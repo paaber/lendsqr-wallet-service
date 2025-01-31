@@ -3,7 +3,7 @@ FROM node:20-buster-slim
 
 # Set locale and install necessary dependencies
 RUN apt-get update && \
-    apt-get install -y locales openssl && \
+    apt-get install -y locales openssl build-essential python3 && \
     sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen && \
     update-locale LANG=en_US.UTF-8
@@ -27,6 +27,7 @@ RUN npm install --verbose
 
 # Copy the rest of the project files
 COPY . .
+
 
 # Build TypeScript files
 RUN npm run build
