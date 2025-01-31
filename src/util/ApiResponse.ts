@@ -1,96 +1,96 @@
+import { Response } from 'express';
 import HttpStatusCodes from '@src/constants/HttpStatusCodes';
-import { IRes } from '@src/routes/types/express/misc';
 
+// Types
 type Data = { [key: string]: any };
 type Status = 'success' | 'error';
-interface IRetJson<T = undefined> {
+
+interface IApiResponse<T = Data> {
   status: Status;
   message: string;
-  data?: T extends Data ? T : Data;
+  data?: T;
 }
 
-export default class ApiResponse<K> {
-  private data: IRetJson<K>;
+// Utility Class
+export default class ApiResponse<T = Data> {
+  private response: IApiResponse<T>;
 
-  constructor(
-    status: IRetJson['status'],
-    message: IRetJson['message'],
-    data?: IRetJson<K>['data']
-  ) {
-    this.data = { status, message, data };
+  constructor(status: Status, message: string, data?: T) {
+    this.response = { status, message, data };
   }
 
-  valueOf() {
-    return this.data;
+  public send(res: Response, statusCode: number): Response {
+    return res.status(statusCode).json(this.response);
   }
 }
 
-export enum ResponseStatus {
-  SUCCESS = 'success',
-  ERROR = 'error',
+// Predefined Responses
+export function sendSuccess<T = Data>(
+  res: Response,
+  message: string,
+  data?: T
+): Response {
+  return new ApiResponse<T>('success', message, data).send(
+    res,
+    HttpStatusCodes.OK
+  );
 }
 
-export function sendInternalServerError(
-  res: IRes,
-  mes = 'An unexpected error occurred.'
-) {
-  return res
-    .status(HttpStatusCodes.INTERNAL_SERVER_ERROR)
-    .json(new ApiResponse(ResponseStatus.ERROR, mes).valueOf());
+export function sendCreated<T = Data>(
+  res: Response,
+  message: string,
+  data?: T
+): Response {
+  return new ApiResponse<T>('success', message, data).send(
+    res,
+    HttpStatusCodes.CREATED
+  );
 }
 
-export function sendBadRequest(res: IRes, message = 'Bad request') {
-  return res
-    .status(HttpStatusCodes.BAD_REQUEST)
-    .json(new ApiResponse(ResponseStatus.ERROR, message).valueOf());
-}
-
-export function sendForbidden(
-  res: IRes,
-  message = 'You cannot access this resource'
-) {
-  return res
-    .status(HttpStatusCodes.FORBIDDEN)
-    .json(new ApiResponse(ResponseStatus.ERROR, message).valueOf());
+export function sendBadRequest(
+  res: Response,
+  message = 'Bad request'
+): Response {
+  return new ApiResponse('error', message).send(
+    res,
+    HttpStatusCodes.BAD_REQUEST
+  );
 }
 
 export function sendUnauthorized(
-  res: IRes,
-  message = 'Authorization failed. You cannot carry out this action'
-) {
-  return res
-    .status(HttpStatusCodes.UNAUTHORIZED)
-    .json(new ApiResponse(ResponseStatus.ERROR, message).valueOf());
+  res: Response,
+  message = 'Unauthorized'
+): Response {
+  return new ApiResponse('error', message).send(
+    res,
+    HttpStatusCodes.UNAUTHORIZED
+  );
 }
 
-export function sendNotFound(res: IRes, message = 'Resource not found') {
-  return res
-    .status(HttpStatusCodes.NOT_FOUND)
-    .json(new ApiResponse(ResponseStatus.ERROR, message).valueOf());
+export function sendForbidden(res: Response, message = 'Forbidden'): Response {
+  return new ApiResponse('error', message).send(res, HttpStatusCodes.FORBIDDEN);
 }
 
-export function sendConflict(res: IRes, message = 'Resource already exists') {
-  return res
-    .status(HttpStatusCodes.CONFLICT)
-    .json(new ApiResponse(ResponseStatus.ERROR, message).valueOf());
+export function sendNotFound(
+  res: Response,
+  message = 'Resource not found'
+): Response {
+  return new ApiResponse('error', message).send(res, HttpStatusCodes.NOT_FOUND);
 }
 
-interface JsonResponse {
-  responseCtx: IRes;
-  status: Status;
-  statusCode: number;
-  message: string;
-  data?: Data;
+export function sendConflict(
+  res: Response,
+  message = 'Resource already exists'
+): Response {
+  return new ApiResponse('error', message).send(res, HttpStatusCodes.CONFLICT);
 }
 
-export function sendJsonResponse({
-  responseCtx,
-  status,
-  statusCode,
-  message,
-  data,
-}: JsonResponse) {
-  return responseCtx
-    .status(statusCode)
-    .json(new ApiResponse(status, message, data).valueOf());
+export function sendInternalServerError(
+  res: Response,
+  message = 'Internal server error'
+): Response {
+  return new ApiResponse('error', message).send(
+    res,
+    HttpStatusCodes.INTERNAL_SERVER_ERROR
+  );
 }
