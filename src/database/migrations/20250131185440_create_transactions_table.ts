@@ -2,16 +2,14 @@ import { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
   return knex.schema.createTable('transactions', (table) => {
-    table.uuid('id').primary().defaultTo(knex.raw('UUID()'));
+    table.uuid('id').primary().defaultTo(knex.raw('(UUID())'));
     table
-      .integer('senderId')
-      .unsigned()
+      .uuid('senderId')
       .references('id')
       .inTable('users')
       .onDelete('CASCADE');
     table
-      .integer('receiverId')
-      .unsigned()
+      .uuid('receiverId')
       .references('id')
       .inTable('users')
       .onDelete('CASCADE');
