@@ -5,20 +5,19 @@ import { EnvVars } from '@src/constants';
 import { config as dotenvConfig } from 'dotenv';
 
 if (process.env.NODE_ENV === 'development') {
-  dotenvConfig();  
+  dotenvConfig();
 }
 
-
 const knexConfig = knex({
-  client: 'mysql', 
+  client: 'mysql',
   connection: EnvVars.DatabaseUrl,
-  pool: { min: 2, max: 10 }, 
+  pool: { min: 2, max: 10 },
   migrations: {
-    tableName: "knex_migrations",
-    directory: "./src/database/migrations",
+    tableName: 'knex_migrations',
+    directory: './src/database/migrations',
   },
   seeds: {
-    directory: "./src/database/seeds",
+    directory: './src/database/seeds',
   },
 });
 

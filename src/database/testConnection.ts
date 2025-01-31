@@ -1,4 +1,4 @@
-import db from ".";
+import db from '.';
 
 async function testConnection() {
   try {

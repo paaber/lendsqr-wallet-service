@@ -23,7 +23,8 @@ export function tick(milliseconds: number): Promise<void> {
 }
 
 export function generateOTP(length: number) {
-  const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const characters =
+    '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
   let otp = '';
 
   for (let i = 0; i < length; i++) {
@@ -34,11 +35,9 @@ export function generateOTP(length: number) {
   return otp;
 }
 
-
-
-interface LevelsDeep<T> { 
-  One: Array<Record<string, T>>
-  Two: Array<Record<string, Record<string, T>>> 
+interface LevelsDeep<T> {
+  One: Array<Record<string, T>>;
+  Two: Array<Record<string, Record<string, T>>>;
 }
 // type ExtractArrayElementType<T> = T extends (infer U)[] ? U : never;
 /**
@@ -48,8 +47,12 @@ interface LevelsDeep<T> {
  * @param keyTwo Key for the object on the second level
  * @returns An array of the values at keyTwo
  */
-export const normalizeTwoLevelsDeepObject = <T>(nestedObjectArray: LevelsDeep<T>["Two"], keyOne: string, keyTwo: string) => {
-  return nestedObjectArray.map(element => {
+export const normalizeTwoLevelsDeepObject = <T>(
+  nestedObjectArray: LevelsDeep<T>['Two'],
+  keyOne: string,
+  keyTwo: string
+) => {
+  return nestedObjectArray.map((element) => {
     return element[keyOne][keyTwo];
   });
 };
@@ -60,8 +63,11 @@ export const normalizeTwoLevelsDeepObject = <T>(nestedObjectArray: LevelsDeep<T>
  * @param keyOne Key for the object on the first level
  * @returns An array of the values at keyOne
  */
-export const normalizeOneLevelDeepObject = <T>(nestedObjectArray: LevelsDeep<T>["One"], keyOne: string) => {
-  return nestedObjectArray.map(element => {
+export const normalizeOneLevelDeepObject = <T>(
+  nestedObjectArray: LevelsDeep<T>['One'],
+  keyOne: string
+) => {
+  return nestedObjectArray.map((element) => {
     return element[keyOne];
   });
 };

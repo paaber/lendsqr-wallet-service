@@ -1,7 +1,7 @@
-import { Router } from "express";
+import { Router } from 'express';
 
-import Paths from "@constants/Paths";
-import v1Router from "./v1";
+import Paths from '@constants/Paths';
+import v1Router from './v1';
 
 // **** Variables **** //
 

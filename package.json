@@ -13,7 +13,9 @@
     "format": "npx prettier --write 'src/**'",
     "knex:migrate": "knex migrate:latest --knexfile knexfile.ts",
     "knex:rollback": "knex migrate:rollback --knexfile knexfile.ts",
-    "knex:seed": "knex seed:run --knexfile knexfile.ts"
+    "knex:seed": "knex seed:run --knexfile knexfile.ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "prepare": "husky install"
   },
   "nodemonConfig": {
     "watch": [
@@ -79,6 +81,7 @@
     "eslint-plugin-prettier": "^5.2.3",
     "find": "^0.3.0",
     "fs-extra": "^11.2.0",
+    "husky": "^8.0.0",
     "jasmine": "^5.1.0",
     "nodemon": "^3.1.4",
     "prettier": "^3.4.2",
