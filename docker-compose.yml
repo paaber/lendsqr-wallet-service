@@ -1,0 +1,48 @@
+version: "3"
+
+services:
+  postgres:
+    container_name: hastro_db
+    image: postgres:latest
+    restart: always
+    volumes:
+      - hastro_db_data:/var/lib/postgresql/data
+    ports:
+      - '6710:5432'
+    environment:
+      POSTGRES_DB: hastro_db
+      POSTGRES_USER: hastro_db
+      POSTGRES_PASSWORD: u1wVreGixnrQsVFVq4GF
+      POSTGRES_HOST_AUTH_METHOD: password
+      PGDATA: /var/lib/postgresql/data/pgdata
+
+  app:
+    build: .
+    ports:
+      - '6711:3000'
+      - '9229:9229'
+      # - '5555:5555'
+    environment:
+      APP_NAME: Hastro
+      port: 3000
+      NODE_ENV: development
+      DEBUG: express:*
+      DATABASE_URL: "postgresql://hastro_db:u1wVreGixnrQsVFVq4GF@postgres:5432/hastro_db?connect_timeout=300&schema=public"
+    command:
+      - bash
+      - '-c'
+      - 'npx prisma migrate deploy && nodemon'
+    depends_on:
+      - postgres
+    develop:
+      watch:
+      - action: sync
+        path: ./
+        target: /usr/src/app/
+        ignore:
+          - node_modules/
+      - action: rebuild
+        path: ./package.json
+
+volumes:
+  hastro_db_data: {}
