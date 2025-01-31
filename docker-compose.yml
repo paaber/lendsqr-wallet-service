@@ -1,48 +1,40 @@
-version: "3"
+version: "3.8"
 
 services:
-  postgres:
-    container_name: hastro_db
-    image: postgres:latest
+  mysql:
+    container_name: lend_qr_mysql
+    image: mysql:latest
     restart: always
     volumes:
-      - hastro_db_data:/var/lib/postgresql/data
+      - lend_qr_db_data:/var/lib/mysql
     ports:
-      - '6710:5432'
+      - "6710:3306"
     environment:
-      POSTGRES_DB: hastro_db
-      POSTGRES_USER: hastro_db
-      POSTGRES_PASSWORD: u1wVreGixnrQsVFVq4GF
-      POSTGRES_HOST_AUTH_METHOD: password
-      PGDATA: /var/lib/postgresql/data/pgdata
+      MYSQL_DATABASE: lend_qr_db
+      MYSQL_USER: lend_qr_db
+      MYSQL_PASSWORD: u1wVreGixnrQsVFVq4GF
+      MYSQL_ROOT_PASSWORD: rootpassword # Change this to a secure password
 
   app:
     build: .
+    container_name: lend_qr_app
     ports:
-      - '6711:3000'
-      - '9229:9229'
-      # - '5555:5555'
+      - "6711:3000"
+      - "9229:9229"
     environment:
-      APP_NAME: Hastro
-      port: 3000
+      APP_NAME: lend_qr
+      PORT: 3000
       NODE_ENV: development
       DEBUG: express:*
-      DATABASE_URL: "postgresql://hastro_db:u1wVreGixnrQsVFVq4GF@postgres:5432/hastro_db?connect_timeout=300&schema=public"
-    command:
-      - bash
-      - '-c'
-      - 'npx prisma migrate deploy && nodemon'
+      DATABASE_URL: mysql://lend_qr_db:u1wVreGixnrQsVFVq4GF@mysql:3306/lend_qr_db
+
+    command: >
+      bash -c "npx prisma migrate deploy && nodemon src/server.ts"
     depends_on:
-      - postgres
-    develop:
-      watch:
-      - action: sync
-        path: ./
-        target: /usr/src/app/
-        ignore:
-          - node_modules/
-      - action: rebuild
-        path: ./package.json
+      - mysql
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
 
 volumes:
-  hastro_db_data: {}
+  lend_qr_db_data:

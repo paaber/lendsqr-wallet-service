@@ -69,6 +69,7 @@
       "@src/*": ["src/*"],
       "@constants/*": ["src/constants/*"],
       "@routes/*": ["src/routes/*"],
+      "@config/*": ["src/config/*"],
     },
     "useUnknownInCatchVariables": false
   },
