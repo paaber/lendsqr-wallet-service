@@ -12,4 +12,6 @@ export default {
   NodeEnv: process.env.NODE_ENV ?? '',
   Port: process.env.PORT ?? 0,
   DatabaseUrl: process.env.DATABASE_URL,
+  KarmaLookupApiUrl: process.env.KARMA_LOOKUP_API_URL,
+  AccessToken: process.env.TOKEN,
 } as const;

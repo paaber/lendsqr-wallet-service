@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import HttpStatusCodes from '@src/constants/HttpStatusCodes';
+import HttpStatusCodes from '@constants/HttpStatusCodes';
 
 // Types
 type Data = { [key: string]: any };
