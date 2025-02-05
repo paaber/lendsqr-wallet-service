@@ -1,8 +1,7 @@
-// src/models/UserModel.ts
-import knex from '../database/index';
+import knex from '@src/database/index';
 import bcrypt from 'bcrypt';
 import EnvVars from '@constants/EnvVars';
-import { HttpError } from '../constants/Errors';
+import { HttpError } from '@constants/Errors';
 import { HttpStatusCodes } from '@src/constants';
 import { checkKarmaBlacklist } from '@src/util/KarmaLookup';
 

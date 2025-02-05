@@ -1,7 +1,6 @@
-// src/controllers/UserController.ts
 import { Request, Response } from 'express';
 import { UserService } from '@src/services/UserService';
-import { UserModel } from '../models/UserModel';
+import { UserModel } from '@src/models/UserModel';
 import {
   sendSuccess,
   sendCreated,
