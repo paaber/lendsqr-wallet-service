@@ -1,11 +1,9 @@
-import "tsconfig-paths/register"; 
+import "tsconfig-paths/register";
 
 
 import type { Knex } from 'knex';
 
-import EnvVars  from '@constants/EnvVars';
-
-
+import EnvVars from '@constants/EnvVars';
 
 
 

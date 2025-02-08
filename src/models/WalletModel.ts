@@ -1,6 +1,7 @@
-import knex from '@src/database/index';
 import { HttpError } from '@constants/Errors';
 import { HttpStatusCodes } from '@src/constants';
+import knex from '@src/database/index';
+import logger from '@src/logger';
 
 export class WalletModel {
   private tableName = 'wallets';
@@ -78,6 +79,7 @@ export class WalletModel {
         const fromWallet = await trx(this.tableName)
           .where({ userId: fromUserId })
           .first();
+
         if (!fromWallet || fromWallet.balance < amount) {
           throw new HttpError(
             'Insufficient balance',
@@ -92,6 +94,7 @@ export class WalletModel {
         const toWallet = await trx(this.tableName)
           .where({ userId: toUserId })
           .first();
+
         if (!toWallet) {
           await trx(this.tableName).insert({
             userId: toUserId,
@@ -110,6 +113,7 @@ export class WalletModel {
           'transfer'
         );
       } catch (error) {
+        logger.error('Error transfering Funds', error);
         throw new HttpError(
           'Failed to transfer funds',
           HttpStatusCodes.INTERNAL_SERVER_ERROR

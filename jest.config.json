@@ -1,0 +1,12 @@
+{
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "moduleNameMapper": {
+    "^@src/(.*)$": "<rootDir>/src/$1",
+    "^@constants/(.*)$": "<rootDir>/src/constants/$1",
+    "^@routes/(.*)$": "<rootDir>/src/routes/$1",
+    "^@config/(.*)$": "<rootDir>/src/config/$1",
+    "^@root/(.*)$": "<rootDir>/$1"
+  },
+  "setupFilesAfterEnv": ["<rootDir>/spec/setup.ts"]
+}

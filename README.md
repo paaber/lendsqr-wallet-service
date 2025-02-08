@@ -72,3 +72,8 @@ src/
 - Write unit tests for API endpoints
 - Deploy the service and update documentation
 
+
+### Authentication
+This system uses a **faux token-based authentication** for simplicity.  
+- The `login` endpoint accepts any non-empty password as valid.
+- The `Authorization` header must contain a non-empty token for protected routes.

@@ -1,7 +1,7 @@
 // src/services/UserService.ts
-import { UserModel } from '@src/models/UserModel';
-import { ConflictError, HttpError } from '@constants/Errors';
+import { ConflictError, HttpError, NotAllowedError } from '@constants/Errors';
 import { HttpStatusCodes } from '@src/constants';
+import { UserModel } from '@src/models/UserModel';
 
 export class UserService {
   private userModel: UserModel;
@@ -11,13 +11,16 @@ export class UserService {
   }
 
   // Register a new user
-  async registerUser(name: string, email: string, password: string) {
+  async registerUser(
+    name: string,
+    email: string,
+    password: string,
+    forced: boolean = false
+  ): Promise<string> {
     const isBlacklisted = await this.userModel.isBlacklisted(email);
-    if (isBlacklisted) {
-      throw new HttpError(
-        'User is blacklisted and cannot be registered',
-        HttpStatusCodes.UNAUTHORIZED
-      );
+
+    if (isBlacklisted && !forced) {
+      throw new NotAllowedError('User is blacklisted and cannot be registered');
     }
 
     const isEmailRegistered = await this.userModel.isEmailRegistered(email);
@@ -27,5 +30,35 @@ export class UserService {
 
     const userId = await this.userModel.createUser(name, email, password);
     return userId;
+  }
+
+  // Faux login (no real authentication)
+  async loginUser(email: string, password: string): Promise<boolean> {
+    const user = await this.userModel.findByEmail(email);
+    if (!user) {
+      throw new HttpError('Invalid credentials', HttpStatusCodes.UNAUTHORIZED);
+    }
+
+    // For simplicity, treat any non-empty password as valid
+    return !!password;
+  }
+
+  // Get user profile
+  async getUserProfile(userId: string): Promise<any> {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new HttpError('User not found', HttpStatusCodes.NOT_FOUND);
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    };
+  }
+
+  // Check if a user is blacklisted
+  async isBlacklisted(email: string): Promise<boolean> {
+    return this.userModel.isBlacklisted(email);
   }
 }

@@ -1,7 +1,8 @@
 // src/util/KarmaLookup.ts
 import EnvVars from '@constants/EnvVars';
-import { HttpError } from '../constants/Errors';
 import { HttpStatusCodes } from '@src/constants';
+import { HttpError } from '../constants/Errors';
+import logger from '@src/logger';
 
 export async function checkKarmaBlacklist(identity: string): Promise<boolean> {
   try {
@@ -25,6 +26,7 @@ export async function checkKarmaBlacklist(identity: string): Promise<boolean> {
 
     return !!data.data?.karma_identity;
   } catch (error) {
+    logger.error('Error checking blacklist status', error);
     throw new HttpError(
       'Error checking blacklist status',
       HttpStatusCodes.INTERNAL_SERVER_ERROR

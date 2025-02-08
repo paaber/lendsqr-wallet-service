@@ -19,8 +19,7 @@ import { corsMiddleware } from './middlewares/cors';
 import limiter from './middlewares/rateLimiting';
 
 import { ApiJsonData } from '@routes/types/express/misc';
-import { readFileSync } from 'fs';
-import swaggerUi from 'swagger-ui-express';
+import { HttpError } from './constants/Errors';
 
 // **** Variables **** //
 
@@ -56,12 +55,22 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     logger.err(err, true);
   }
 
-  let status = HttpStatusCodes.INTERNAL_SERVER_ERROR; // Default to 500
+  let status = HttpStatusCodes.INTERNAL_SERVER_ERROR;
   let message = 'Internal Server Error';
 
-  if (err instanceof RouteError) {
-    status = err.status;
-    message = err.message;
+  switch (true) {
+    case err instanceof HttpError:
+      status = err.statusCode;
+      message = err.message;
+      break;
+
+    case err instanceof RouteError:
+      status = err.status;
+      message = err.message;
+      break;
+
+    default:
+      message = err.message || 'Something went wrong';
   }
 
   return res.status(status).json({ error: message });
@@ -73,37 +82,14 @@ app.use('/uploads', express.static(path.join(staticDir, 'uploads')));
 
 // Default route to welcome message
 app.get('/', (_: Request, res: Response) => {
-  return res.send('WELCOME TO HASTRO');
+  return res.send('WELCOME TO LENDSQUARE');
 });
-
-// ** Swagger Setup ** //
-app.get(
-  `/api${API_VERSION_STRING}/docs/swagger.yaml`,
-  (req: Request, res: Response) => {
-    const swaggerFile = readFileSync('./src/other/swagger.yaml', 'utf8');
-    res.setHeader('Content-Type', 'text/yaml');
-    res.send(swaggerFile);
-  }
-);
 
 const resolveBasePathRoute = () => {
   return EnvVars.NodeEnv === NodeEnvs.Dev
     ? `/api${API_VERSION_STRING}`
     : `${API_VERSION_STRING}`;
 };
-
-app.use(
-  `/api${API_VERSION_STRING}/docs`,
-  swaggerUi.serve,
-  swaggerUi.setup(
-    {},
-    {
-      swaggerOptions: {
-        url: `${resolveBasePathRoute()}/docs/swagger.yaml`,
-      },
-    }
-  )
-);
 
 // ** 404 Not Found Route ** //
 app.use((req: Request, res: Response) => {

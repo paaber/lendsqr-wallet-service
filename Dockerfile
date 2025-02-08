@@ -3,10 +3,11 @@ FROM node:20-buster-slim
 
 # Set locale and install necessary dependencies
 RUN apt-get update && \
-    apt-get install -y locales openssl build-essential python3 && \
+    apt-get install -y locales openssl build-essential python3 curl iputils-ping dnsutils netcat telnet && \
     sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen && \
     update-locale LANG=en_US.UTF-8
+
 
 # Set working directory
 WORKDIR /usr/src/app
