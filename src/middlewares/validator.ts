@@ -1,55 +1,23 @@
-import { HttpStatusCodes } from '@src/constants';
-import { ResponseStatus, sendJsonResponse } from '@src/util/ApiResponse';
+// @src/middlewares/validator.ts
 import { Request, Response, NextFunction } from 'express';
-import { Schema } from 'joi';
+import Joi from 'joi';
+import { sendBadRequest } from '@src/util/ApiResponse';
+import { UserSchema, WalletSchema } from '@src/util/validation';
 
-export const validateBody = (schema: Schema) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+type SchemaKey = keyof typeof UserSchema | keyof typeof WalletSchema;
+
+export function validate(schemaKey: SchemaKey) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const schema =
+      (UserSchema as Record<string, Joi.ObjectSchema>)[schemaKey] ||
+      (WalletSchema as Record<string, Joi.ObjectSchema>)[schemaKey];
+
     const { error } = schema.validate(req.body);
 
     if (error) {
-      return sendJsonResponse({
-        responseCtx: res,
-        statusCode: HttpStatusCodes.UNPROCESSABLE_ENTITY,
-        status: ResponseStatus.ERROR,
-        message: error.details[0].message,
-      });
+      return sendBadRequest(res, error.details[0].message);
     }
 
     next();
   };
-};
-
-export const validateQueryParams = (schema: Schema) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    const { error } = schema.validate(req.query);
-
-    if (error) {
-      return sendJsonResponse({
-        responseCtx: res,
-        statusCode: HttpStatusCodes.UNPROCESSABLE_ENTITY,
-        status: ResponseStatus.ERROR,
-        message: error.details[0].message,
-      });
-    }
-
-    next();
-  };
-};
-
-export const validatePathParams = (schema: Schema) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    const { error } = schema.validate(req.params);
-
-    if (error) {
-      return sendJsonResponse({
-        responseCtx: res,
-        statusCode: HttpStatusCodes.UNPROCESSABLE_ENTITY,
-        status: ResponseStatus.ERROR,
-        message: error.details[0].message,
-      });
-    }
-
-    next();
-  };
-};
+}

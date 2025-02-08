@@ -15,14 +15,10 @@ import {
 } from '@src/util/ApiResponse';
 import { Request, Response } from 'express';
 import logger from '../logger';
+import { IUserService } from '@src/services/types';
 
 export class UserController {
-  private userService: UserService;
-
-  constructor() {
-    const userModel = new UserModel();
-    this.userService = new UserService(userModel);
-  }
+  constructor(private userService: IUserService) {}
 
   // Register a new user
   async registerUser(req: Request, res: Response) {

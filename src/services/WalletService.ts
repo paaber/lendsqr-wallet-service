@@ -2,8 +2,9 @@
 import { WalletModel } from '@src/models/WalletModel';
 import { HttpError } from '@constants/Errors';
 import { HttpStatusCodes } from '@src/constants';
+import { IWalletService } from './types';
 
-export class WalletService {
+export class WalletService implements IWalletService {
   private walletModel: WalletModel;
 
   constructor(walletModel: WalletModel) {
@@ -11,7 +12,7 @@ export class WalletService {
   }
 
   // Fund a user's wallet
-  async fundWallet(userId: number, amount: number): Promise<void> {
+  async fundWallet(userId: string, amount: number): Promise<void> {
     if (amount <= 0) {
       throw new HttpError(
         'Amount must be greater than 0',
@@ -24,8 +25,8 @@ export class WalletService {
 
   // Transfer funds between users
   async transferFunds(
-    fromUserId: number,
-    toUserId: number,
+    fromUserId: string,
+    toUserId: string,
     amount: number
   ): Promise<void> {
     if (amount <= 0) {
@@ -46,7 +47,7 @@ export class WalletService {
   }
 
   // Withdraw funds from a user's wallet
-  async withdrawFunds(userId: number, amount: number): Promise<void> {
+  async withdrawFunds(userId: string, amount: number): Promise<void> {
     if (amount <= 0) {
       throw new HttpError('Amount must be greater than 0', 400);
     }

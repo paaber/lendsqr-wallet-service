@@ -1,21 +1,15 @@
-import { Request, Response } from 'express';
-import { WalletService } from '@src/services/WalletService';
-import { WalletModel } from '@src/models/WalletModel';
+import { HttpError } from '@src/constants/Errors';
+import { IWalletService } from '@src/services/types';
 import {
-  sendSuccess,
   sendBadRequest,
   sendInternalServerError,
+  sendSuccess,
 } from '@src/util/ApiResponse';
+import { Request, Response } from 'express';
 import logger from '../logger';
-import { HttpError } from '@src/constants/Errors';
 
 export class WalletController {
-  private walletService: WalletService;
-
-  constructor() {
-    const walletModel = new WalletModel();
-    this.walletService = new WalletService(walletModel);
-  }
+  constructor(private walletService: IWalletService) {}
 
   async fundWallet(req: Request, res: Response) {
     const { userId, amount } = req.body;

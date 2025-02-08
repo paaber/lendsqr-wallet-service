@@ -2,8 +2,9 @@
 import { ConflictError, HttpError, NotAllowedError } from '@constants/Errors';
 import { HttpStatusCodes } from '@src/constants';
 import { UserModel } from '@src/models/UserModel';
+import { IUserService } from './types';
 
-export class UserService {
+export class UserService implements IUserService {
   private userModel: UserModel;
 
   constructor(userModel: UserModel) {
