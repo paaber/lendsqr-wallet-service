@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  mysql:
+    container_name: lend_qr_mysql
+    image: mysql
+    restart: always
+    volumes:
+      - lend_qr_db_data:/var/lib/mysql
+    ports:
+      - '5710:3306'
+    environment:
+      MYSQL_DATABASE: lend_qr_db
+      MYSQL_USER: lend_qr_db
+      MYSQL_PASSWORD: u1wVreGixnrQsVFVq4GF
+      MYSQL_ROOT_PASSWORD: rootpassword
+    
+
+  app:
+    build: .
+    container_name: lend_qr_app
+    ports:
+      - '5711:3000'
+      - '9229:9229'
+    environment:
+      APP_NAME: lend_qr
+      PORT: 3000
+      NODE_ENV: development
+      DEBUG: express:*
+      DATABASE_URL: "mysql://lend_qr_db:u1wVreGixnrQsVFVq4GF@mysql:3306/lend_qr_db"
+
+    command: >
+      bash -c " sleep 2 && npx knex migrate:latest && npx knex seed:run && nodemon "
+
+    depends_on:
+      - mysql
+    develop:
+      watch:
+      - action: sync
+        path: ./
+        target: /usr/src/app/
+        ignore:
+          - node_modules/
+      - action: rebuild
+        path: ./package.json
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+volumes:
+  lend_qr_db_data:

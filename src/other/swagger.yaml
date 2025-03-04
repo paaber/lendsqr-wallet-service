@@ -1,0 +1,2619 @@
+openapi: 3.0.3
+info:
+  title: Hastro API
+  description: Showcase your talents, Create a virtual storefront, Host events
+  termsOfService: /terms-of-use/
+  contact:
+    email: hastroworld@gmail.com
+  version: v1
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    UserType:
+      type: string
+      enum:
+        - User
+        - Partner
+        - Admin
+security:
+  - bearerAuth: []
+servers:
+  - url: http://localhost:6711/api/v1
+  - url: https://api.hastroworld.com/v1
+tags:
+  - name: users
+    description: User registration, login, details, and authorization
+  - name: reports
+    description: Reporting functionality
+  - name: storefront
+    description: Storefront functionality
+  - name: chats
+    description: Chat functionality
+  - name: auth
+    description: Authentication and authorization
+  - name: statistics
+    description: Statistics functionality
+  - name: notifications
+    description: Notification functionality
+  - name: miniapp
+    description: MiniApp functionality
+  - name: dashboard
+    description: Dashboard functionality
+
+paths:
+  /users/check-username:
+    post:
+      tags:
+        - users
+      summary: Checks if a username is already in use by another user during registration.
+      description: Takes in a username as request data.
+      operationId: check-username
+      requestBody:
+        description: User desired username.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The desired username for registration.
+              required:
+                - username
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Username is available.",
+                  data: { isAvailable: true },
+                }
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Username is already in use",
+                  data: { isAvailable: false },
+                }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /reports/new/{userId}:
+    post:
+      tags:
+        - reports
+      summary: report a user
+      description: Allows a logged-In user to report another user based on a recognized violation.
+      operationId: reportUser
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: The ID of the registered user to be reported.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                {
+                  "violation": "EXPLICIT_CONTENT",
+                  "backstory": "He lied to me",
+                }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Report has been registered",
+                  data:
+                    {
+                      sameCommunity: false,
+                      caseNumber: "12345678",
+                      result:
+                        {
+                          id: "12345678",
+                          violation: "string",
+                          outcome: null,
+                          backstory: "string",
+                          status: "PENDING",
+                          createdAt: "DateTime",
+                          defendant: { name: "string", username: "string" },
+                        },
+                    },
+                }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              example: { status: "error", message: "Bad Request" }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /reports/edit/{reportId}:
+    patch:
+      tags:
+        - reports
+      summary: edit created report
+      description: Allows a logged-In user to edit the report they made against another user.
+      operationId: editReport
+      parameters:
+        - in: path
+          name: reportId
+          required: true
+          schema:
+            type: string
+          description: The ID of an existing report the user created.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                {
+                  backstory: "He lied to me again and again",
+                  linkedCaseNumber: "2024-02-26.c6944c86-1238-45cb-a8e9-77eb0d0ae352",
+                }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Report has been edited",
+                  data:
+                    {
+                      report:
+                        {
+                          id: "12345678",
+                          violation: "string",
+                          outcome: null,
+                          backstory: "string",
+                          status: "PENDING",
+                          createdAt: "DateTime",
+                          updatedAt: "DateTime",
+                          defendant: { name: "string", username: "string" },
+                        },
+                    },
+                }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              example: { status: "error", message: "Bad Request" }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /reports/all/reported:
+    get:
+      tags:
+        - reports
+      summary: get all created reports
+      description: Allows a logged-In user to get all the reports they have made.
+      operationId: getReports
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Reports has been retrieved successfully",
+                  data:
+                    [
+                      report:
+                        {
+                          id: "12345678",
+                          violation: "string",
+                          outcome: null,
+                          backstory: "string",
+                          status: "PENDING",
+                          createdAt: "DateTime",
+                          updatedAt: "DateTime",
+                          caseNumber: "2024-09-23.12536AGSJD",
+                          defendant: { name: "string", username: "string" },
+                        },
+                    ],
+                }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              example: { status: "error", message: "Bad Request" }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /reports/all/cases-against:
+    get:
+      tags:
+        - reports
+      summary: get all reports made against a user
+      description: Allows a logged-In user to get all reports made against them.
+      operationId: getCasesAgainst
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Cases against has been retrieved successfully",
+                  data:
+                    [
+                      report:
+                        {
+                          id: "12345678",
+                          violation: "string",
+                          outcome: null,
+                          backstory: "string",
+                          status: "PENDING",
+                          createdAt: "DateTime",
+                          updatedAt: "DateTime",
+                          caseNumber: "2024-09-23.12536AGSJD",
+                          defendant: { name: "string", username: "string" },
+                        },
+                    ],
+                }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              example: { status: "error", message: "Bad Request" }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /users/register:
+    post:
+      tags:
+        - users
+      summary: Registers a new user.
+      description: Registers a user with a username, password, and other details.
+      operationId: registerUser
+      requestBody:
+        description: User registration details.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The desired username for registration.
+                password:
+                  type: string
+                  description: The password for the user account.
+                email:
+                  type: string
+                  description: The user's email address.
+              required:
+                - username
+                - password
+                - email
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "User registered successfully.",
+                  data: { userId: "123456" },
+                }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              example: { status: "error", message: "Invalid request data." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /users/login:
+    post:
+      tags:
+        - users
+      summary: Logs in a user.
+      description: Authenticates a user and returns a JWT token.
+      operationId: loginUser
+      requestBody:
+        description: User login details.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The username of the user.
+                password:
+                  type: string
+                  description: The password of the user.
+              required:
+                - username
+                - password
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "User logged in successfully.",
+                  data: { token: "JWT_TOKEN" },
+                }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                { status: "error", message: "Invalid username or password." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /users/profile/{userId}:
+    get:
+      tags:
+        - users
+      summary: Retrieves the profile of a specific user.
+      description: Fetches the profile details of the user with the given userId.
+      operationId: getUserProfile
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "User profile retrieved successfully.",
+                  data:
+                    {
+                      userId: "123456",
+                      username: "john_doe",
+                      email: "john@example.com",
+                      profilePicture: "http://example.com/avatar.jpg",
+                    },
+                }
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example: { status: "error", message: "User not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /threads:
+    post:
+      tags:
+        - threads
+      summary: Create a new thread for a specific user.
+      description: Creates a new thread under the user specified by userId.
+      operationId: createThread
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the user creating the thread.
+      requestBody:
+        description: The details of the thread to be created.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                location:
+                  type: string
+                  description: The location the user set for the thread.
+                content:
+                  type: string
+                  description: The content of the thread.
+              required:
+                - title
+                - content
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Thread created successfully.",
+                  data: {
+                    "id": "e132f662-ccbf-401e-99e0-d32bac6b8dea",
+                    "userId": "d04b16c0-3a21-4581-896f-359022864b9f",
+                    "content": "welcome to my thread",
+                    "location": null,
+                    "commentsCount": 0,
+                    "likeCount": 0,
+                    "createdAt": "2024-09-29T21:52:47.834Z",
+                    "updatedAt": "2024-09-29T21:52:47.834Z",
+                    "media": []
+                  },
+                }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              example: { status: "error", message: "Invalid request data." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+    get:
+      tags:
+        - threads
+      summary: Get all threads for explore screen.
+      description: Retrieves all threads created by all users.
+      operationId: getUserThread
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          description: The maximum number of comments to return.
+        - name: page
+          in: query
+          schema:
+            type: integer
+          description: The page number of the comments to return.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "All latest threads retrieved successfully",
+                  data:
+                    [
+                      {
+                        "id": "7283e394-d5ba-4f61-88b2-f693856cf893",
+                        "userId": "d04b16c0-3a21-4581-896f-359022864b9f",
+                        "content": "welcome to my thread",
+                        "location": null,
+                        "commentsCount": 4,
+                        "likeCount": 1,
+                        "createdAt": "2024-09-23T14:24:21.814Z",
+                        "updatedAt": "2024-09-23T15:48:58.787Z",
+                        "media": [
+                          {
+                            "url": "https://res.cloudinary.com/duxos9f96/video/upload/v1727101456/Threads/Bomb-SoundBible.com-891110113_1727101454672-940639860.mp3",
+                            "type": "AUDIO"
+                          },
+                          {
+                            "url": "https://res.cloudinary.com/duxos9f96/image/upload/v1727101458/Threads/44ff0bd8-85ca-49b4-b841-1506afb9a3fd_text_1727101454674-816652273.gif",
+                            "type": "IMAGE"
+                          },
+                          {
+                            "url": "https://res.cloudinary.com/duxos9f96/video/upload/v1727101461/Threads/backend-FvF_1727101454684-227719081.mp4",
+                            "type": "VIDEO"
+                          }
+                        ]
+                      },
+                    ],
+                }
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example: { status: "error", message: "User not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /threads/{userId}:
+    get:
+      tags:
+        - threads
+      summary: Get all threads for a specific user.
+      description: Retrieves all threads created by the user with the given userId.
+      operationId: getUserThread
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the user whose threads to retrieve.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "User threads retrieved successfully.",
+                  data:
+                    [
+                      {
+                        "id": "7283e394-d5ba-4f61-88b2-f693856cf893",
+                        "userId": "d04b16c0-3a21-4581-896f-359022864b9f",
+                        "content": "welcome to my thread",
+                        "location": null,
+                        "commentsCount": 4,
+                        "likeCount": 1,
+                        "createdAt": "2024-09-23T14:24:21.814Z",
+                        "updatedAt": "2024-09-23T15:48:58.787Z",
+                        "media": [
+                          {
+                            "url": "https://res.cloudinary.com/duxos9f96/video/upload/v1727101456/Threads/Bomb-SoundBible.com-891110113_1727101454672-940639860.mp3",
+                            "type": "AUDIO"
+                          },
+                          {
+                            "url": "https://res.cloudinary.com/duxos9f96/image/upload/v1727101458/Threads/44ff0bd8-85ca-49b4-b841-1506afb9a3fd_text_1727101454674-816652273.gif",
+                            "type": "IMAGE"
+                          },
+                          {
+                            "url": "https://res.cloudinary.com/duxos9f96/video/upload/v1727101461/Threads/backend-FvF_1727101454684-227719081.mp4",
+                            "type": "VIDEO"
+                          }
+                        ]
+                      },
+                    ],
+                }
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example: { status: "error", message: "User not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+    /threads/{userId}/{threadId}:
+    delete:
+      tags:
+        - threads
+      summary: Delete a specific thread by threadId.
+      description: Deletes the thread specified by threadId for the user with userId.
+      operationId: deleteThread
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the user who owns the thread.
+        - name: threadId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the thread to delete.
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example: { status: "error", message: "Thread not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /storefront/{storeId}/items/{itemId}/owner:
+    get:
+      tags:
+        - storefront
+      summary: Get owner details of a specific item in the storefront.
+      description: Retrieves the owner information for an item in the specified store.
+      operationId: getItemsInStorefrontControllerOwner
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Store ID.
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Item ID.
+      responses:
+        "200":
+          description: Owner details retrieved successfully.
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Owner details retrieved successfully.",
+                  data: { ownerId: "12345", ownerName: "John Doe" },
+                }
+        "404":
+          description: Item or store not found.
+          content:
+            application/json:
+              example: { status: "error", message: "Item or store not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /storefront/{storeId}/items:
+    get:
+      tags:
+        - storefront
+      summary: Get all items in the storefront.
+      description: Retrieves all items from the specified store.
+      operationId: getItemsInStoreFront
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Store ID.
+      responses:
+        "200":
+          description: Items retrieved successfully.
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Items retrieved successfully.",
+                  data:
+                    [
+                      { itemId: "1", itemName: "Item 1", price: 100 },
+                      { itemId: "2", itemName: "Item 2", price: 200 },
+                    ],
+                }
+        "404":
+          description: Store not found.
+          content:
+            application/json:
+              example: { status: "error", message: "Store not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+    post:
+      tags:
+        - storefront
+      summary: Create a new item in the storefront.
+      description: Adds a new item to the specified store.
+      operationId: createItem
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Store ID.
+      requestBody:
+        description: Details of the item to be created.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                itemName:
+                  type: string
+                  description: Item name.
+                price:
+                  type: number
+                  description: Item price.
+              required:
+                - itemName
+                - price
+      responses:
+        "201":
+          description: Item created successfully.
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Item created successfully.",
+                  data: { itemId: "12345" },
+                }
+        "400":
+          description: Invalid request data.
+          content:
+            application/json:
+              example: { status: "error", message: "Invalid request data." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /storefront/{storeId}/collections:
+    get:
+      tags:
+        - storefront
+      summary: Get all collections in the storefront.
+      description: Retrieves all collections from the specified store.
+      operationId: getCollectionsInStorefront
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Store ID.
+      responses:
+        "200":
+          description: Collections retrieved successfully.
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Collections retrieved successfully.",
+                  data:
+                    [
+                      { collectionId: "1", collectionName: "Collection 1" },
+                      { collectionId: "2", collectionName: "Collection 2" },
+                    ],
+                }
+        "404":
+          description: Store not found.
+          content:
+            application/json:
+              example: { status: "error", message: "Store not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /storefront/{storeId}/categories:
+    get:
+      tags:
+        - storefront
+      summary: Get all categories in the storefront.
+      description: Retrieves all categories from the specified store.
+      operationId: getCategoriesInStorefront
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Store ID.
+      responses:
+        "200":
+          description: Categories retrieved successfully.
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Categories retrieved successfully.",
+                  data:
+                    [
+                      { categoryId: "1", categoryName: "Category 1" },
+                      { categoryId: "2", categoryName: "Category 2" },
+                    ],
+                }
+        "404":
+          description: Store not found.
+          content:
+            application/json:
+              example: { status: "error", message: "Store not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+    post:
+      tags:
+        - storefront
+      summary: Create a new category in the storefront.
+      description: Adds a new category to the specified store.
+      operationId: createNewCategoryInStoreFront
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Store ID.
+      requestBody:
+        description: Details of the category to be created.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                categoryName:
+                  type: string
+                  description: Category name.
+              required:
+                - categoryName
+      responses:
+        "201":
+          description: Category created successfully.
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Category created successfully.",
+                  data: { categoryId: "12345" },
+                }
+        "400":
+          description: Invalid request data.
+          content:
+            application/json:
+              example: { status: "error", message: "Invalid request data." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /storefront/{storeId}/collection:
+    post:
+      tags:
+        - storefront
+      summary: Create a new collection in the storefront.
+      description: Adds a new collection to the specified store.
+      operationId: createNewCollectionInStorefront
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Store ID.
+      requestBody:
+        description: Details of the collection to be created.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                collectionName:
+                  type: string
+                  description: Collection name.
+              required:
+                - collectionName
+      responses:
+        "201":
+          description: Collection created successfully.
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Collection created successfully.",
+                  data: { collectionId: "12345" },
+                }
+        "400":
+          description: Invalid request data.
+          content:
+            application/json:
+              example: { status: "error", message: "Invalid request data." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /storefront/{storeId}/owner:
+    get:
+      tags:
+        - storefront
+      summary: Get storefront and owner details.
+      description: Retrieves the details of the storefront and its owner.
+      operationId: getStorefrontdetailsOwner
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Store ID.
+      responses:
+        "200":
+          description: Storefront details retrieved successfully.
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Storefront details retrieved successfully.",
+                  data:
+                    {
+                      storeId: "12345",
+                      storeName: "My Store",
+                      ownerName: "John Doe",
+                    },
+                }
+        "404":
+          description: Store not found.
+          content:
+            application/json:
+              example: { status: "error", message: "Store not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /storefront/{storeId}/items/{itemId}/action:
+    post:
+      tags:
+        - storefront
+      summary: Perform an action on an item in the storefront.
+      description: Performs a specific action (e.g., like, share) on an item in the specified store.
+      operationId: performActionOnStorefront
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Store ID.
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Item ID.
+      requestBody:
+        description: The action to be performed.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                actionType:
+                  type: string
+                  description: Type of action (e.g., like, share).
+              required:
+                - actionType
+      responses:
+        "200":
+          description: Action performed successfully.
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Action performed successfully.",
+                  data: { itemId: "12345", actionType: "like" },
+                }
+        "404":
+          description: Item or store not found.
+          content:
+            application/json:
+              example: { status: "error", message: "Item or store not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /storefront/{storeId}:
+    get:
+      tags:
+        - storefront
+      summary: Get storefront details.
+      description: Retrieves details of the storefront specified by storeId.
+      operationId: getStoreFront
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Store ID.
+      responses:
+        "200":
+          description: Storefront details retrieved successfully.
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Storefront details retrieved successfully.",
+                  data:
+                    {
+                      storeId: "12345",
+                      storeName: "My Store",
+                      ownerName: "John Doe",
+                    },
+                }
+        "404":
+          description: Store not found.
+          content:
+            application/json:
+              example: { status: "error", message: "Store not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /storefront/{storeId}/items/search:
+    get:
+      tags:
+        - storefront
+      summary: Search for items in the storefront.
+      description: Searches for items in the specified store based on a search query.
+      operationId: searchItemsInStorefront
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Store ID.
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search query for items.
+      responses:
+        "200":
+          description: Search results retrieved successfully.
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Search results retrieved successfully.",
+                  data:
+                    [
+                      { itemId: "1", itemName: "Item 1", price: 100 },
+                      { itemId: "2", itemName: "Item 2", price: 200 },
+                    ],
+                }
+        "404":
+          description: No items found.
+          content:
+            application/json:
+              example: { status: "error", message: "No items found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /threads/{thread_id}/comments:
+    post:
+      tags:
+        - threads
+      summary: Post a comment to a specific thread.
+      description: Adds a comment to the thread identified by thread_id.
+      operationId: postComments
+      parameters:
+        - name: thread_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the thread to which the comment will be added.
+      requestBody:
+        description: The content of the comment.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: The content of the comment.
+              required:
+                - comment
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Comment posted successfully.",
+                  data: { commentId: "12345" },
+                }
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example: { status: "error", message: "Thread not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+    get:
+      tags:
+        - threads
+      summary: get comments for a specific thread.
+      description: sends all comments in a thread.
+      operationId: getComments
+      parameters:
+        - name: thread_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the thread.
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          description: The maximum number of comments to return.
+        - name: page
+          in: query
+          schema:
+            type: integer
+          description: The page number of the comments to return.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Comment posted successfully.",
+                  "data": {
+                    "id": "7283e394-d5ba-4f61-88b2-f693856cf893",
+                    "userId": "d04b16c0-3a21-4581-896f-359022864b9f",
+                    "content": "welcome to my thread",
+                    "location": null,
+                    "commentsCount": 1,
+                    "likeCount": 1,
+                    "createdAt": "2024-09-23T14:24:21.814Z",
+                    "updatedAt": "2024-09-23T15:48:58.787Z",
+                    "media": [
+                      {
+                        "url": "https://res.cloudinary.com/duxos9f96/video/upload/v1727101456/Threads/Bomb-SoundBible.com-891110113_1727101454672-940639860.mp3",
+                        "type": "AUDIO"
+                      },
+                      {
+                        "url": "https://res.cloudinary.com/duxos9f96/image/upload/v1727101458/Threads/44ff0bd8-85ca-49b4-b841-1506afb9a3fd_text_1727101454674-816652273.gif",
+                        "type": "IMAGE"
+                      },
+                      {
+                        "url": "https://res.cloudinary.com/duxos9f96/video/upload/v1727101461/Threads/backend-FvF_1727101454684-227719081.mp4",
+                        "type": "VIDEO"
+                      }
+                    ],
+                    "comments": [
+                      {
+                        "id": "a4cfe4f2-275c-484e-813d-a8a10abdf84d",
+                        "userId": "d04b16c0-3a21-4581-896f-359022864b9f",
+                        "threadId": "7283e394-d5ba-4f61-88b2-f693856cf893",
+                        "content": "first comment",
+                        "likeCount": 0,
+                        "createdAt": "2024-09-23T15:37:17.915Z",
+                        "updatedAt": "2024-09-23T15:37:17.915Z"
+                      }
+                    ]
+                  }
+                }
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example: { status: "error", message: "Thread not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /threads/{thread_id}/like:
+    post:
+      tags:
+        - threads
+      summary: Like a specific thread.
+      description: Likes the thread identified by thread_id.
+      operationId: likeThread
+      parameters:
+        - name: thread_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the thread to like.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Thread liked successfully.",
+                  data: { likes: 123 },
+                }
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example: { status: "error", message: "Thread not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+  /users/search:
+    get:
+      tags:
+      - users
+      summary: Search users
+      description: Searches for users based on specified criteria.
+      operationId: searchUsers
+      parameters:
+      - in: query
+        name: query
+        schema:
+          type: string
+        description: The search query.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example: {status: "success", message: "Search results retrieved successfully", data: [{/* user details */: ''}]}
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              example: {status: "error", message: "Invalid search query"}
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example: {status: "error", message: "An unexpected error occurred."}
+
+  /users/interests/all:
+    get:
+      tags:
+        - users
+      summary: Retrieves all available user interests.
+      description: Fetches a list of all interests that users can select from.
+      operationId: getAllInterests
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "All interests retrieved successfully.",
+                  data: ["Sports", "Music", "Technology", "Travel"],
+                }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /users/interests:
+    get:
+      tags:
+        - users
+      summary: Retrieves the interests of the authenticated user.
+      description: Fetches the list of interests selected by the authenticated user.
+      operationId: getUserInterests
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "User interests retrieved successfully.",
+                  data: ["Sports", "Technology"],
+                }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example: { status: "error", message: "Authentication required." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+    post:
+      tags:
+        - users
+      summary: Select and save the user's interest.
+      description: Allows the user to select a list of interests from the available list.
+      operationId: selectInterests
+      requestBody:
+        description: Interests selection data.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                interests: [
+                  {
+                    "name": "systems",
+                    "type": "EDUCATION"
+                  },
+                  {
+                    "name": "fashion",
+                    "type": "ART"
+                  }
+                ]
+              required:
+                - interests
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                { status: "success", message: "User Interest updated successfully", data: { /** user details */} }
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example: { status: "error", message: "User or avatar not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /users/select-avatar/{userId}:
+    post:
+      tags:
+        - users
+      summary: Selects an avatar for the user.
+      description: Allows the user to select an avatar from the available list.
+      operationId: selectUserAvatar
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Avatar selection data.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                avatarId:
+                  type: string
+                  description: The ID of the selected avatar.
+              required:
+                - avatarId
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                { status: "success", message: "Avatar selected successfully." }
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example: { status: "error", message: "User or avatar not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /users/avatars:
+    get:
+      tags:
+        - users
+      summary: Retrieves unattached avatars.
+      description: Fetches a list of avatars that are not attached to any user.
+      operationId: getUnattachedAvatars
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Unattached avatars retrieved successfully.",
+                  data: ["avatar1.jpg", "avatar2.jpg"],
+                }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /users/avatar:
+    post:
+      tags:
+        - users
+      summary: Uploads an unattached avatar.
+      description: Allows the user to upload an avatar that is not attached to any user.
+      operationId: uploadUnattachedAvatar
+      requestBody:
+        description: Avatar upload data.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+                  description: The avatar file to upload.
+              required:
+                - avatar
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Avatar uploaded successfully.",
+                  data: { avatarId: "123456" },
+                }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /users/select-structure/{userId}:
+    post:
+      tags:
+        - users
+      summary: Selects a structure for the user.
+      description: Allows the user to select a structure from the available list.
+      operationId: selectUserStructure
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Structure selection data.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                structureId:
+                  type: string
+                  description: The ID of the selected structure.
+              required:
+                - structureId
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Structure selected successfully.",
+                }
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example:
+                { status: "error", message: "User or structure not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /users/structures:
+    get:
+      tags:
+        - users
+      summary: Retrieves unattached structures.
+      description: Fetches a list of structures that are not attached to any user.
+      operationId: getUnattachedStructures
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Unattached structures retrieved successfully.",
+                  data: ["structure1.jpg", "structure2.jpg"],
+                }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /users/structure:
+    post:
+      tags:
+        - users
+      summary: Uploads an unattached structure.
+      description: Allows the user to upload a structure that is not attached to any user.
+      operationId: uploadUnattachedStructure
+      requestBody:
+        description: Structure upload data.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                structure:
+                  type: string
+                  format: binary
+                  description: The structure file to upload.
+              required:
+                - structure
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Structure uploaded successfully.",
+                  data: { structureId: "123456" },
+                }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /users/highlights/{userId}:
+    post:
+      tags:
+        - users
+      summary: Creates a highlight for the user.
+      description: Allows the user to create a highlight.
+      operationId: createHighlight
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Highlight creation data.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: The title of the highlight.
+                description:
+                  type: string
+                  description: The description of the highlight.
+              required:
+                - title
+                - description
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Highlight created successfully.",
+                  data: { highlightId: "123456" },
+                }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /users/contacts/{user_id}:
+    post:
+      tags:
+        - users
+      summary: Sends a friend request to another user.
+      description: Allows the user to send a friend request to another user.
+      operationId: sendFriendRequest
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Friend request data.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                friend_id:
+                  type: string
+                  description: The ID of the user to send the friend request to.
+              required:
+                - friend_id
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "Friend request sent successfully.",
+                  data: { requestId: "123456" },
+                }
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example: { status: "error", message: "User not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+    get:
+      tags:
+        - users
+      summary: Retrieves the user's friend list.
+      description: Fetches the list of friends for the user with the given user_id.
+      operationId: getUserFriends
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  status: "success",
+                  message: "User's friend list retrieved successfully.",
+                  data:
+                    [
+                      { friendId: "123456", username: "friend1" },
+                      { friendId: "123457", username: "friend2" },
+                    ],
+                }
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example: { status: "error", message: "User not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+    delete:
+      tags:
+        - users
+      summary: Removes a friend from the user's friend list.
+      description: Allows the user to remove a friend from their friend list.
+      operationId: removeFriend
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: friend_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                { status: "success", message: "Friend removed successfully." }
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example: { status: "error", message: "Friend not found." }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+  /chats:
+    get:
+      tags:
+        - chats
+      summary: Get all chats
+      description: Retrieve all chats
+      operationId: getAllChats
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+
+  /chats/search/{chatId}:
+    get:
+      tags:
+        - chats
+      summary: Search direct message
+      description: Search for a direct message by chat ID
+      operationId: searchDirectMessage
+      parameters:
+        - name: chatId
+          in: path
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+
+  /chats/send/{userId}:
+    post:
+      tags:
+        - chats
+      summary: Send direct message
+      description: Send a direct message to a user
+      operationId: sendDirectMessage
+      parameters:
+        - name: userId
+          in: path
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Hello!"
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /chats/retreive/{chatId}:
+    get:
+      tags:
+        - chats
+      summary: Retrieve direct message
+      description: Retrieve a direct message by chat ID
+      operationId: retreiveDirectMessage
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+
+  /chats/status-update/{chatId}:
+    post:
+      tags:
+        - chats
+      summary: Update message status
+      description: Update the status of a direct message by chat ID
+      operationId: updateMessageStatus
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "read"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: User registration
+      description: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "newuser"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: User login
+      description: Log in a user
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "user1"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                { status: "success", message: "Login successful", data: { token: "acess_token", user: {/** User details */} } }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                { status: "error", message: "Bad Request" }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /auth/account-verification:
+    post:
+      tags:
+        - auth
+      summary: User account activation
+      description: Activate a user's account by email verification
+      operationId: accountActivation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: "******"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                { status: "success", message: "Account Activated", data: {/** User details */} }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                { status: "error", message: "Bad Request" }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /auth/forgot-password:
+    post:
+      tags:
+        - auth
+      summary: Trigger the reset password flow
+      description: Allows a user to get an OTP to enable a password reset
+      operationId: ResetPasswordRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "name@gmail.com"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                { status: "success", message: "Token sent to user's email" }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                { status: "error", message: "Bad Request" }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /auth/forgot-password/otp:
+    post:
+      tags:
+        - auth
+      summary: Password Reset OTP Verification
+      description: Allows a user to verify the OTP to validate the request for a password reset
+      operationId: verifyPasswordResetToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: "8MG127"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                { status: "success", message: "Token verified", data: { token: "eyj...jwt_token" } }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                { status: "error", message: "Bad Request" }
+        "422":
+          description: Unprocessable Entity
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /auth/reset-password:
+    post:
+      tags:
+        - auth
+      summary: Set new password
+      description: Allows a user to set a new password 
+      operationId: setNewPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: "8MG127"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                { status: "success", message: "password updated" }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                { status: "error", message: "Bad Request" }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                { status: "error", message: "Unauthorized" }
+        "422":
+          description: Unprocessable Entity
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                { status: "error", message: "An unexpected error occurred." }
+
+  /auth/miniapp/validate-request:
+    post:
+      tags:
+        - auth
+      summary: Validate miniapp request
+      description: Validate a request to the miniapp
+      operationId: validateMiniAppRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requestId:
+                  type: string
+                  example: "req123"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /auth/miniapp/user-authorization:
+    get:
+      tags:
+        - auth
+      summary: Get user authorization
+      description: Retrieve the user's authorization for the miniapp
+      operationId: getUserAuthorization
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /auth/miniapp/fetch-token:
+    get:
+      tags:
+        - auth
+      summary: Fetch authorization token
+      description: Retrieve the authorization token for the miniapp
+      operationId: fetchAuthorizationToken
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /statistics/tags/trending/top:
+    get:
+      tags:
+        - statistics
+      summary: Get top trending tags
+      description: Retrieve the top trending tags
+      operationId: getTrendingTags
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+
+  /statistics/tags/trending/latest:
+    get:
+      tags:
+        - statistics
+      summary: Get latest trending tags
+      description: Retrieve the latest trending tags
+      operationId: getActiveTrendingTags
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+
+  /statistics/tags/viral/top:
+    get:
+      tags:
+        - statistics
+      summary: Get top viral tags
+      description: Retrieve the top viral tags
+      operationId: getViralTags
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+
+  /statistics/tags/viral/latest:
+    get:
+      tags:
+        - statistics
+      summary: Get latest viral tags
+      description: Retrieve the latest viral tags
+      operationId: getActiveViralTags
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+
+  /statistics/users/active-hours:
+    get:
+      tags:
+        - statistics
+      summary: Get users' active hours
+      description: Retrieve the active hours of users
+      operationId: getUsersActiveHours
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+
+  /statistics/users/avg-time-spent:
+    get:
+      tags:
+        - statistics
+      summary: Get users' average time spent
+      description: Retrieve the average time spent by users
+      operationId: getUsersAvgTimeSpent
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+
+  /statistics/users/location/top:
+    get:
+      tags:
+        - statistics
+      summary: Get top user locations
+      description: Retrieve the top locations of users
+      operationId: getUsersLocation
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+
+  /statistics/users/searches/top:
+    get:
+      tags:
+        - statistics
+      summary: Get top user searches
+      description: Retrieve the top searches made by users
+      operationId: getUsersSearchHistory
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+
+  /statistics/users/searches/latest:
+    get:
+      tags:
+        - statistics
+      summary: Get latest user searches
+      description: Retrieve the latest searches made by users
+      operationId: getUsersActiveSearchHistory
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+
+  /notifications/unread:
+    get:
+      tags:
+        - notifications
+      summary: Get all unread notifications
+      description: Retrieve all unread notifications
+      operationId: getAllUnreadNotifications
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+
+  /notifications/viewed/{notificationId}:
+    post:
+      tags:
+        - notifications
+      summary: Mark notification as viewed
+      description: Mark a specific notification as viewed
+      operationId: markAsViewed
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /miniapp:
+    get:
+      tags:
+        - miniapp
+      summary: Get all miniapps
+      description: Retrieve all miniapps
+      operationId: getAllMiniApps
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+
+  /miniapp/{appId}:
+    get:
+      tags:
+        - miniapp
+      summary: Retrieve miniapp
+      description: Retrieve a specific miniapp
+      operationId: retrieveMiniApp
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+
+    put:
+      tags:
+        - miniapp
+      summary: Update miniapp
+      description: Update the description of a specific miniapp
+      operationId: updateMiniApp
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  example: "Updated description"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+    delete:
+      tags:
+        - miniapp
+      summary: Delete miniapp
+      description: Delete a specific miniapp
+      operationId: deleteMiniApp
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+
+  /miniapp/activate:
+    post:
+      tags:
+        - miniapp
+      summary: Activate miniapp
+      description: Activate a specific miniapp
+      operationId: activateMiniApp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                appId:
+                  type: string
+                  example: "miniapp123"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /miniapp/deactivate:
+    post:
+      tags:
+        - miniapp
+      summary: Deactivate miniapp
+      description: Deactivate a specific miniapp
+      operationId: deactivateMiniApp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                appId:
+                  type: string
+                  example: "miniapp123"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /dashboard/profile-insights:
+    get:
+      tags:
+        - dashboard
+      summary: Get profile insights
+      description: Retrieve profile insights for the dashboard
+      operationId: getProfileInsights
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+
+  /enum/user-class:
+  post:
+    tags:
+      - User Enum
+    summary: Create a new user class
+    description: Creates a new user class enumeration entry.
+    operationId: createUserClass
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              userId:
+                type: string
+              type:
+                $ref: "#/components/schemas/UserType"
+              username:
+                type: string
+            example:
+              userId: "12345"
+              type: "Admin"
+              username: "Femi"
+    responses:
+      "201":
+        description: Created
+        content:
+          application/json:
+            example:
+              status: "success"
+              message: "Operation successful"
+              data: { /* user class details */ }
+      "400":
+        description: Bad Request
+        content:
+          application/json:
+            example:
+              status: "error"
+              message: "Bad Request"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            example:
+              status: "error"
+              message: "Unauthorized"
